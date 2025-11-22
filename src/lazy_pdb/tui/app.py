@@ -24,10 +24,19 @@ class DebuggerApp(App[None]):
         ("s", "step_into", "Step"),
     ]
 
-    def __init__(self, frame: FrameType, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        frame: FrameType,
+        stdout_output: str = "",
+        stderr_output: str = "",
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """Initialize the debugger app with a frame."""
         super().__init__(*args, **kwargs)
         self.current_frame = frame
+        self.stdout_output = stdout_output
+        self.stderr_output = stderr_output
         self.should_continue = False
         self.step_mode: str | None = None
 
@@ -52,6 +61,13 @@ class DebuggerApp(App[None]):
     def on_mount(self) -> None:
         """Handle app mount."""
         self.query_one("#command-input", Input).focus()
+
+        # Display captured output
+        output_viewer = self.query_one("#output-viewer", OutputViewer)
+        if self.stdout_output:
+            output_viewer.add_output(self.stdout_output, "stdout")
+        if self.stderr_output:
+            output_viewer.add_output(self.stderr_output, "stderr")
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle command input."""

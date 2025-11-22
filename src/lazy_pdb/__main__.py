@@ -36,8 +36,12 @@ def main() -> NoReturn:
 
     # Import and set our debugger as the breakpoint handler
     from lazy_pdb.debugger import set_trace
+    from lazy_pdb.output_capture import start_capture
 
     sys.breakpointhook = set_trace
+
+    # Start capturing stdout/stderr so it can be displayed in the TUI
+    start_capture()
 
     # Run the target
     try:
