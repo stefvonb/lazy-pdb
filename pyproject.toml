@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lazy-pdb"
+version = "0.1.0"
+description = "A modern TUI debugger for Python built with Textual"
+authors = [
+    {name = "Stefan von Buddenbrock"},
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "textual>=0.47.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "ruff>=0.1.0",
+    "ty>=0.0.1a27",
+]
+
+[project.scripts]
+lazy-pdb = "lazy_pdb.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lazy_pdb"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
