@@ -1,10 +1,30 @@
-"""Test script to verify output capture in the debugger."""
+"""Test script to verify interactive features in the debugger."""
 
-print("Line 1: Before breakpoint")
-print("Line 2: Still before breakpoint")
-print("Line 3: Last line before breakpoint")
+def outer_function(x, y):
+    """Outer function for testing call stack."""
+    print(f"Outer function called with x={x}, y={y}")
+    result = inner_function(x * 2, y * 2)
+    return result + 10
 
-breakpoint()
+def inner_function(a, b):
+    """Inner function for testing call stack and variables."""
+    print(f"Inner function called with a={a}, b={b}")
 
-print("Line 4: After breakpoint")
-print("Line 5: Final line")
+    # Local variables to test
+    local_var1 = "Hello, World!"
+    local_var2 = [1, 2, 3, 4, 5]
+    local_dict = {"key1": "value1", "key2": "value2", "nested": {"inner": "data"}}
+
+    # Global variables are also available
+    print("About to hit breakpoint...")
+    breakpoint()
+
+    return a + b
+
+# Global variables to test
+GLOBAL_CONSTANT = "This is a global constant"
+global_list = [10, 20, 30, 40, 50]
+
+print("Starting test...")
+result = outer_function(5, 10)
+print(f"Final result: {result}")

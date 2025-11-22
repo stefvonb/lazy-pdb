@@ -18,9 +18,13 @@ Screen {
 }
 
 #command-input {
-    dock: bottom;
     height: 3;
     border: solid cyan;
+    margin-bottom: 0;
+}
+
+#command-input:focus {
+    border: heavy cyan;
 }
 
 Header {
@@ -29,4 +33,36 @@ Header {
 
 Footer {
     background: $primary;
+}
+
+/* Focus styles for widgets */
+CodeViewer:focus {
+    border: heavy green;
+}
+
+OutputViewer:focus {
+    border: heavy yellow;
+}
+
+VariableViewer:focus {
+    border: heavy blue;
+}
+
+FrameViewer:focus {
+    border: heavy magenta;
+}
+
+#inspect-dialog {
+    width: 80;
+    height: auto;
+    max-height: 30;
+    border: thick $primary;
+    background: $surface;
+    padding: 2;
+}
+
+#inspect-content {
+    width: 100%;
+    height: auto;
+    overflow-y: auto;
 }

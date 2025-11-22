@@ -18,7 +18,7 @@ class OutputViewer(RichLog):
         """Initialize the output viewer."""
         super().__init__(*args, **kwargs)
         self.border_title = "Output (STDOUT/STDERR)"
-        self.can_focus = False
+        self.can_focus = True
 
     def on_mount(self) -> None:
         """Initialize the output viewer when mounted."""

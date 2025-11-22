@@ -3,25 +3,35 @@
 from types import FrameType
 
 from rich.table import Table
-from textual.widgets import Static
+from textual.widgets import DataTable
 
 
-class VariableViewer(Static):
+class VariableViewer(DataTable):
     """Widget to display variables in the current scope."""
 
     DEFAULT_CSS = """
     VariableViewer {
         height: 50%;
         border: solid blue;
-        padding: 1;
+        padding: 0;
     }
     """
+
+    BINDINGS = [
+        ("g", "toggle_globals", "Toggle Global/Local"),
+        ("enter", "inspect_variable", "Inspect Variable"),
+    ]
+
+    can_focus = True
 
     def __init__(self, frame: FrameType, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
         """Initialize the variable viewer."""
         super().__init__(*args, **kwargs)
         self.frame = frame
-        self.border_title = "Variables"
+        self.show_globals = False
+        self.variables_data: dict[str, tuple[str, str]] = {}
+        self.cursor_type = "row"
+        self.border_title = "Variables (Local)"
 
     def on_mount(self) -> None:
         """Update the variables view when mounted."""
@@ -32,21 +42,45 @@ class VariableViewer(Static):
         self.frame = frame
         self.render_variables()
 
+    def toggle_scope(self) -> None:
+        """Toggle between local and global variables."""
+        self.show_globals = not self.show_globals
+        self.border_title = "Variables (Global)" if self.show_globals else "Variables (Local)"
+        self.render_variables()
+
+    def action_toggle_globals(self) -> None:
+        """Action to toggle between global and local variables."""
+        self.toggle_scope()
+
+    def action_inspect_variable(self) -> None:
+        """Action to inspect the selected variable (handled by RowSelected event)."""
+        # This action is handled by the DataTable.RowSelected event
+        # Just trigger a row selection if we have a cursor
+        if self.cursor_row is not None and self.row_count > 0:
+            # Emit the row selected event by simulating selection
+            self.action_select_cursor()
+
     def render_variables(self) -> None:
         """Render the variables table."""
-        table = Table(title="Local Variables", expand=True)
-        table.add_column("Name", style="cyan", no_wrap=True)
-        table.add_column("Type", style="magenta")
-        table.add_column("Value", style="green")
+        # Clear existing data
+        self.clear(columns=True)
 
-        # Get local variables
-        local_vars = self.frame.f_locals
+        # Add columns
+        self.add_column("Name", width=20)
+        self.add_column("Type", width=15)
+        self.add_column("Value")
+
+        # Get variables based on current mode
+        vars_dict = self.frame.f_globals if self.show_globals else self.frame.f_locals
 
         # Filter out special variables and sort
         filtered_vars = {
-            k: v for k, v in local_vars.items()
+            k: v for k, v in vars_dict.items()
             if not k.startswith("__")
         }
+
+        # Store variable data for inspection
+        self.variables_data = {}
 
         for name in sorted(filtered_vars.keys()):
             value = filtered_vars[name]
@@ -57,9 +91,9 @@ class VariableViewer(Static):
             if len(value_str) > 50:
                 value_str = value_str[:47] + "..."
 
-            table.add_row(name, type_name, value_str)
+            self.add_row(name, type_name, value_str)
+            # Store full representation for later inspection
+            self.variables_data[name] = (type_name, repr(value))
 
         if not filtered_vars:
-            table.add_row("(no variables)", "", "")
-
-        self.update(table)
+            self.add_row("(no variables)", "", "")

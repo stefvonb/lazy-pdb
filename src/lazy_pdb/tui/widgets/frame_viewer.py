@@ -4,24 +4,29 @@ import traceback
 from types import FrameType
 
 from rich.table import Table
-from textual.widgets import Static
+from textual.widgets import DataTable
 
 
-class FrameViewer(Static):
+class FrameViewer(DataTable):
     """Widget to display the call stack and allow frame navigation."""
 
     DEFAULT_CSS = """
     FrameViewer {
         height: 50%;
         border: solid magenta;
-        padding: 1;
+        padding: 0;
     }
     """
+
+    can_focus = True
 
     def __init__(self, frame: FrameType, *args, **kwargs) -> None:  # type: ignore[no-untyped-def]
         """Initialize the frame viewer."""
         super().__init__(*args, **kwargs)
-        self.frame = frame
+        self.original_frame = frame  # The frame where breakpoint was hit
+        self.frame = frame  # Currently selected frame for display
+        self.frames_list: list[FrameType] = []
+        self.cursor_type = "row"
         self.border_title = "Call Stack"
 
     def on_mount(self) -> None:
@@ -35,20 +40,26 @@ class FrameViewer(Static):
 
     def render_frames(self) -> None:
         """Render the call stack."""
-        table = Table(title="Call Stack", expand=True)
-        table.add_column("#", style="cyan", no_wrap=True, width=4)
-        table.add_column("Function", style="yellow")
-        table.add_column("Location", style="green")
+        # Clear existing data
+        self.clear(columns=True)
 
-        # Build the stack from current frame
+        # Add columns
+        self.add_column("#", width=4)
+        self.add_column("Function", width=20)
+        self.add_column("Location")
+
+        # Build the stack from original breakpoint frame (preserves full stack)
         stack = []
-        current = self.frame
+        current = self.original_frame
         while current is not None:
             stack.append(current)
             current = current.f_back
 
+        # Store frames list for selection
+        self.frames_list = list(reversed(stack))
+
         # Display stack in reverse order (oldest first)
-        for i, frame in enumerate(reversed(stack)):
+        for i, frame in enumerate(self.frames_list):
             func_name = frame.f_code.co_name
             filename = frame.f_code.co_filename
             lineno = frame.f_lineno
@@ -59,14 +70,10 @@ class FrameViewer(Static):
 
             location = f"{filename}:{lineno}"
 
-            # Highlight the current frame
+            # Mark the current frame
             if frame is self.frame:
-                table.add_row(
-                    f"→{i}",
-                    f"[bold]{func_name}[/bold]",
-                    f"[bold]{location}[/bold]",
-                )
+                self.add_row(f"→{i}", func_name, location)
+                # Move cursor to this row
+                self.move_cursor(row=i)
             else:
-                table.add_row(str(i), func_name, location)
-
-        self.update(table)
+                self.add_row(str(i), func_name, location)
