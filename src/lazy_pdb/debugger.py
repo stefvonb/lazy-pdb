@@ -3,6 +3,8 @@
 import sys
 from typing import Any
 
+from lazy_pdb.tui import DebuggerApp
+
 
 def set_trace(*args: Any, **kwargs: Any) -> None:
     """
@@ -14,13 +16,10 @@ def set_trace(*args: Any, **kwargs: Any) -> None:
     # Get the caller's frame (the frame that called breakpoint())
     frame = sys._getframe(1)
 
-    # TODO: Launch the TUI debugger here
-    print(f"lazy-pdb breakpoint hit at {frame.f_code.co_filename}:{frame.f_lineno}")
-    print("TUI debugger not yet implemented")
+    # Launch the TUI debugger
+    app = DebuggerApp(frame)
+    app.run()
 
-    # For now, fall back to pdb
-    import pdb
-
-    # Use Pdb().set_trace() with the caller's frame
-    debugger = pdb.Pdb()
-    debugger.set_trace(frame)
+    # Handle step modes after TUI exits
+    if app.step_mode == "quit":
+        sys.exit(0)

@@ -1,0 +1,32 @@
+/* Textual CSS for lazy-pdb debugger */
+
+Screen {
+    background: $surface;
+}
+
+#main-container {
+    height: 1fr;
+    width: 100%;
+}
+
+#left-panel {
+    width: 65%;
+}
+
+#right-panel {
+    width: 35%;
+}
+
+#command-input {
+    dock: bottom;
+    height: 3;
+    border: solid cyan;
+}
+
+Header {
+    background: $primary;
+}
+
+Footer {
+    background: $primary;
+}
