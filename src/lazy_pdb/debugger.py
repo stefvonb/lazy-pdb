@@ -142,12 +142,12 @@ def set_trace(*args: Any, **kwargs: Any) -> None:
     or when PYTHONBREAKPOINT=lazy_pdb.set_trace is set.
     """
     # If we're already in stepping mode and hit a breakpoint,
-    # don't show the debugger again - just clear the step mode
-    # and let the trace function handle it
+    # the trace function has already stopped here, so don't show debugger again
     if _debugger_state["mode"] in ("step", "next"):
         # We're stepping and hit an explicit breakpoint() call
-        # Clear step mode so we stop here naturally
-        _debugger_state["mode"] = None
+        # The trace function already showed the debugger when we hit this line
+        # Just return without clearing mode so stepping continues
+        return
 
     # Ensure output capture is running
     capture = get_capture()
