@@ -87,13 +87,25 @@ class VariableViewer(DataTable):
             type_name = type(value).__name__
 
             # Limit value representation length
-            value_str = repr(value)
+            # Handle errors in __repr__ (e.g., uninitialized objects)
+            try:
+                value_str = repr(value)
+            except Exception as e:
+                value_str = f"<repr error: {type(e).__name__}: {e}>"
+
             if len(value_str) > 50:
                 value_str = value_str[:47] + "..."
 
             self.add_row(name, type_name, value_str)
+
             # Store full representation for later inspection
-            self.variables_data[name] = (type_name, repr(value))
+            # Use the same value_str if repr succeeded, otherwise try again
+            try:
+                full_repr = repr(value)
+            except Exception as e:
+                full_repr = f"<repr error: {type(e).__name__}: {e}>"
+
+            self.variables_data[name] = (type_name, full_repr)
 
         if not filtered_vars:
             self.add_row("(no variables)", "", "")
